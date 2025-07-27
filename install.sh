@@ -34,7 +34,7 @@ cfwarpIP() {
 	if [[ ! -f "$PREFIX/bin/warpendpoint" ]]; then
 		echo "Downloading warpendpoint program"
 		if [[ -n $cpu ]]; then
-			curl -L -o warpendpoint -# --retry 2 https://raw.githubusercontent.com/EmpressTeam/warp/main/endip/$cpu
+			curl -L -o warpendpoint -# --retry 2 https://raw.githubusercontent.com/Ptechgithub/warp/main/endip/$cpu
 			cp warpendpoint $PREFIX/bin
 			chmod +x $PREFIX/bin/warpendpoint
 		fi
@@ -213,6 +213,17 @@ endipresult() {
 	fi
 
 	clear
+	
+	# Check if result.csv was created and has content
+	if [[ ! -f "result.csv" ]] || [[ ! -s "result.csv" ]]; then
+		echo -e "${red}╔═══════════════════════════════════════╗${rest}"
+		echo -e "${red}║     ${yellow}❌ No results generated!${red}        ║${rest}"
+		echo -e "${red}║   ${yellow}Check your internet connection${red}   ║${rest}"
+		echo -e "${red}╚═══════════════════════════════════════╝${rest}"
+		rm -f warpendpoint ip.txt result.csv >/dev/null 2>&1
+		exit 1
+	fi
+	
 	cat result.csv | awk -F, '$3!="timeout ms" {print} ' | sort -t, -nk2 -nk3 | uniq | head -11 | awk -F, '{print "Endpoint "$1" Packet Loss Rate "$2" Average Delay "$3}'
 	Endip_v4=$(cat result.csv | grep -oE "[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+:[0-9]+" | head -n 1)
 	Endip_v6=$(cat result.csv | grep -oE "\[.*\]:[0-9]+" | head -n 1)
